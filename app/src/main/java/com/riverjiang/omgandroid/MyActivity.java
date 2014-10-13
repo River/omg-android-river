@@ -2,6 +2,7 @@ package com.riverjiang.omgandroid;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,8 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -21,7 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONObject;
@@ -39,7 +39,6 @@ public class MyActivity extends Activity implements View.OnClickListener, Adapte
     ListView mainListView;
 
     JSONAdapter mJSONAdapter;
-    ArrayList<String> mNameList = new ArrayList<String>();
     ShareActionProvider mShareActionProvider;
 
     private static final String PREFS = "prefs";
@@ -138,17 +137,20 @@ public class MyActivity extends Activity implements View.OnClickListener, Adapte
 
     @Override
     public void onClick(View view) {
+        // Hide software keyboard
+        hideKeyboard();
+
         queryBooks(mainEditText.getText().toString());
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         JSONObject jsonObject = (JSONObject) mJSONAdapter.getItem(position);
-        String coverID = jsonObject.optString("cover_i", "");
 
         Intent detailIntent = new Intent(this, DetailActivity.class);
 
-        detailIntent.putExtra("coverID", coverID);
+        detailIntent.putExtra("coverID", jsonObject.optString("cover_i", ""));
+        detailIntent.putExtra("bookTitle", jsonObject.optString("title", ""));
         // put any extra information to be sent to the intent here
 
         startActivity(detailIntent);
@@ -174,10 +176,21 @@ public class MyActivity extends Activity implements View.OnClickListener, Adapte
             @Override
             public void onFailure(int statusCode, Throwable throwable, JSONObject error)
             {
-                Toast.makeText(getApplicationContext(), "Error: " + statusCode + " " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),
+                        "Error: " + statusCode + " " + throwable.getMessage(), Toast.LENGTH_LONG).show();
                 Log.e("OMGAndroid", "Error: " + statusCode + " " + throwable.getMessage());
                 setProgressBarIndeterminateVisibility(false);
             }
         });
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        // check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 }

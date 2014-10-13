@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.ShareActionProvider;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -29,6 +30,13 @@ public class DetailActivity extends Activity {
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // Set book title
+        TextView bookTitle = (TextView) findViewById(R.id.book_title);
+
+        String title = this.getIntent().getExtras().getString("bookTitle");
+        if (title.length() > 0) bookTitle.setText(title);
+
+        // Set book cover image
         ImageView imageView = (ImageView) findViewById(R.id.image_cover);
 
         String coverID = this.getIntent().getExtras().getString("coverID");
